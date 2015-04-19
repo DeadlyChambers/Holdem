@@ -1,0 +1,103 @@
+﻿@using System.Collections.Specialized
+@model CommonCardLibrary.Table
+
+@{
+    
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Current</h2>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="form-horizontal">
+        <h4>Table</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(x => x.Id)
+        <div class="row">
+            @for (var x = 0; x < Model.Players.Count && x < 4; x++)
+            {
+                <div class="col-xs-3 card-container">
+                    @foreach (var card in Model.Players[x].Cards)
+                    {
+                        @Html.Partial("Card", card)
+                    }
+
+                    <div>
+                        <h1>@Model.Players[x].Hand</h1>
+
+                        @if (Model.Players[x].WinningHand)
+                        {
+                            <span class="glyphicon glyphicon-check" style="color: green"></span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+        
+           
+
+        <div class="row">
+
+            @foreach (var card in Model.Cards)
+            {
+                <div class="col-xs-2">
+                    @Html.Partial("Card", card)
+                </div>
+            }
+
+        </div>
+
+        <div class="row">
+            <div class="col-xs-2"></div>
+            <div class="col-xs-2">
+                <img class="card" src="@Url.Content("~/Content/Images/back.png")" />
+            </div>
+            <div class="btn-group col-xs-4 col-xs-offset-4" role="group">
+                <button type="submit" class="btn btn-default" name="Command" value="Check">Check</button>
+                <button type="submit" class="btn btn-default" name="Command" value="Bet">Bet</button>
+                <button type="submit" class="btn btn-default" name="Command" value="Fold">Fold</button>
+            </div>
+        </div>
+       
+
+
+        
+        @if (Model.Players.Count > 4)
+        {
+            for (var x = 4; x < Model.Players.Count; x++)
+            {
+                <div class="col-xs-3 card-container">
+                    @foreach (var card in Model.Players[x].Cards)
+                    {
+                        @Html.Partial("Card", card)
+                    }
+
+                    <div>
+                        <h1>@Model.Players[x].Hand</h1>
+
+                        @if (Model.Players[x].WinningHand)
+                        {
+                            <span class="glyphicon glyphicon-check" style="color: green"></span>
+                        }
+                    </div>
+                </div>
+            }
+        }
+
+        @*<div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </div>*@
+    </div>
+}
+
+
+
+
+
+

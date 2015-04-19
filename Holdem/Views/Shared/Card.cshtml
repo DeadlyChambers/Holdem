@@ -1,0 +1,21 @@
+﻿@model CommonCardLibrary.Card
+
+@if(Model.IsDown)
+{  <div class="card">
+       <img src="@Url.Content("~/Content/Images/back.png")" />
+    </div>
+        }
+        else{
+        <div class="card ">
+            <div class="top-card @((Model.Suit == CommonCardLibrary.Suit.Diamond || Model.Suit == CommonCardLibrary.Suit.Heart) ? "red":"black")">
+                @Model.ValueToString()
+                <img class="card-suit" src="@Url.Content(@Model.SuitUrl())" />
+            </div>
+
+            <div class="bottom-card @((Model.Suit == CommonCardLibrary.Suit.Diamond || Model.Suit == CommonCardLibrary.Suit.Heart) ? "red" : "black")">
+                @Model.ValueToString()
+                <img class="card-suit" src="@Url.Content(@Model.SuitUrl())" />
+            </div>
+        </div>
+        }
+
