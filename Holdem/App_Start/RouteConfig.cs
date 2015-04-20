@@ -10,10 +10,18 @@ namespace Holdem
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             routes.MapRoute(
+               name: "Table",
+               url: "Table/{action}/{playerCount}",
+               defaults: new { controller = "Table", action = "Index" }
+           );
+
+            routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
             );
+
+           
         }
     }
 }

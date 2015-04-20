@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CommonCardLibrary
 {
-    public partial class Table
+    public partial class TableViewModel
     {
         public List<Player> DetermineWinner()
         {

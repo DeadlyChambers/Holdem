@@ -64,3 +64,31 @@ textarea {
 .card-suit{
     width:25px;
 }
+.card-holder {
+    position: relative;
+}
+.card-inline {
+    position: absolute;
+    left: 0;
+}
+.card-shift-right {
+    left: 75px;
+}
+.current-hand {
+    position: absolute;
+    top: 178px;
+}
+.board {
+    margin-top: 245px;
+}
+body {
+    background-color: #c3c3c3;
+}
+.body-content {
+    padding: 20px 40px;
+    background-color: #7DAB63;
+}
+.winning-check {
+    color: green;
+    position: absolute;
+}

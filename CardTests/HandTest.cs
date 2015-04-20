@@ -18,9 +18,9 @@ namespace CardTests
             return player;
         }
 
-        public Table GetTable(List<Player> players, List<Card> cards = null)
+        public TableViewModel GetTable(List<Player> players, List<Card> cards = null)
         {
-            return new Table(new Deck(), players, cards ?? new List<Card>());
+            return new TableViewModel(new Deck(), players, cards ?? new List<Card>());
         }
 
 

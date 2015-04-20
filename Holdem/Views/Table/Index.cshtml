@@ -1,4 +1,4 @@
-﻿@model CommonCardLibrary.Table
+﻿@model CommonCardLibrary.TableViewModel
   @using (Html.BeginForm("Current", "Table", FormMethod.Post, new { id = "subForm", tableId = Model.Id}))
   {
       @Html.HiddenFor(x => x.Id);

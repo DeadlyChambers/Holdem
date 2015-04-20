@@ -1,21 +1,31 @@
-﻿@model CommonCardLibrary.Card
+﻿@using Microsoft.Ajax.Utilities
+@model CommonCardLibrary.Card
+@{
+    if (ViewBag.playerCard == null)
+    {ViewBag.playerCard = false;}
+    if (ViewBag.playingCard == null)
+    { ViewBag.playingCard = false; }
+    var playerCard = ViewBag.playerCard ? "card-shift-right" : "";
+    var playingCard = ViewBag.playingCard ? "card-inline" : "";
+}
 
 @if(Model.IsDown)
 {  <div class="card">
        <img src="@Url.Content("~/Content/Images/back.png")" />
     </div>
-        }
-        else{
-        <div class="card ">
-            <div class="top-card @((Model.Suit == CommonCardLibrary.Suit.Diamond || Model.Suit == CommonCardLibrary.Suit.Heart) ? "red":"black")">
-                @Model.ValueToString()
-                <img class="card-suit" src="@Url.Content(@Model.SuitUrl())" />
-            </div>
-
-            <div class="bottom-card @((Model.Suit == CommonCardLibrary.Suit.Diamond || Model.Suit == CommonCardLibrary.Suit.Heart) ? "red" : "black")">
-                @Model.ValueToString()
-                <img class="card-suit" src="@Url.Content(@Model.SuitUrl())" />
-            </div>
+}
+else
+{
+    <div class="card @playerCard @playingCard">
+        <div class="top-card  @((Model.Suit == CommonCardLibrary.Suit.Diamond || Model.Suit == CommonCardLibrary.Suit.Heart) ? "red":"black")">
+            @Model.ValueToString()
+            <img class="card-suit" src="@Url.Content(@Model.SuitUrl())" />
         </div>
-        }
+
+        <div class="bottom-card  @((Model.Suit == CommonCardLibrary.Suit.Diamond || Model.Suit == CommonCardLibrary.Suit.Heart) ? "red" : "black")">
+            @Model.ValueToString()
+            <img class="card-suit" src="@Url.Content(@Model.SuitUrl())" />
+        </div>
+    </div>
+}
 

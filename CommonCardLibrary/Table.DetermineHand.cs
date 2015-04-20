@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CommonCardLibrary
 {
-    public partial class Table
+    public partial class TableViewModel
     {
         private int currentCardCount;
         private int tempHandStrength;

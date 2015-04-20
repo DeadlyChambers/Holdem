@@ -12,8 +12,8 @@ namespace Holdem.Controllers
 
     public class TableController : Controller
     {
-        private readonly ICacheService _service;
-        public TableController(ICacheService service)
+        private readonly ITableService _service;
+        public TableController(ITableService service)
         {
             _service = service;
         }
@@ -25,7 +25,7 @@ namespace Holdem.Controllers
             playerCount = playerCount ?? 1;
             for (var x = 0; x < playerCount; x++)
                 players.Add(new Player());
-            var table = new Table(deck, players);
+            var table = new TableViewModel(deck, players);
             table.Deal();
             _service.Save(table);
             return View("Current", table);

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CommonCardLibrary
 {
-    public partial class Table
+    public partial class TableViewModel
     {
         public Guid Id { get; set; }
         public List<Player> Players{get;set;}
@@ -15,7 +15,7 @@ namespace CommonCardLibrary
         public List<Card> Cards { get; set; }
         public bool DealOver { get; set; }
         
-        public Table(Deck deck, List<Player> players) 
+        public TableViewModel(Deck deck, List<Player> players) 
         {
             Id = Guid.NewGuid();
             Deck = deck;
@@ -23,7 +23,7 @@ namespace CommonCardLibrary
             Cards = new List<Card>();
         }
 
-        public Table(Deck deck, List<Player> players, List<Card> cards)
+        public TableViewModel(Deck deck, List<Player> players, List<Card> cards)
         {
             Id = Guid.NewGuid();
             Deck = deck;

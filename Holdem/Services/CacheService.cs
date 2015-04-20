@@ -4,22 +4,37 @@ using CommonCardLibrary;
 
 namespace Holdem.Services
 {
-    public interface ICacheService
+    public interface ITableService
     {
-        void Save(Table table);
-        Table Get(Guid? id);
+        void Save(TableViewModel tableViewModel);
+        TableViewModel Get(Guid? id);
     }
 
-    public class CacheService : ICacheService
+    public class CacheService : ITableService
     {
-        public void Save(Table table)
+        public void Save(TableViewModel tableViewModel)
         {
-            HttpContext.Current.Cache["currentTable"] = table;
+            HttpContext.Current.Cache["currentTable"] = tableViewModel;
         }
 
-        public Table Get(Guid? id)
+        public TableViewModel Get(Guid? id)
         {
-            return (Table)HttpContext.Current.Cache["currentTable"];
+            return (TableViewModel)HttpContext.Current.Cache["currentTable"];
         }
     }
+
+    public class TableService : ITableService
+    {
+        public void Save(TableViewModel tableViewModel)
+        {
+            HttpContext.Current.Cache["currentTable"] = tableViewModel;
+        }
+
+        public TableViewModel Get(Guid? id)
+        {
+            return (TableViewModel)HttpContext.Current.Cache["currentTable"];
+        }
+    }
+
+
 }

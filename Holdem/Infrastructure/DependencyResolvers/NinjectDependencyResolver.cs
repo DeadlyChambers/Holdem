@@ -33,7 +33,7 @@ namespace MCV.Skeleton.Infrastructure
 
         private void AddBindings()
         {
-            _kernel.Bind<ICacheService>().To<CacheService>();
+            _kernel.Bind<ITableService>().To<TableService>();
         }
 
 
