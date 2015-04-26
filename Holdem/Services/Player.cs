@@ -16,5 +16,7 @@ namespace Holdem.Services
         public int HandEnum { get; set; }
         public int HandStrength { get; set; }
         public bool WinningHand { get; set; }
+        //public virtual Game Game { get; set; }
+        //public virtual Guid GameId { get; set; }
     }
 }

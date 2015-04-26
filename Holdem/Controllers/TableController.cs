@@ -23,6 +23,7 @@ namespace Holdem.Controllers
             var table = _service.Get(null, playerCount);
             table.Deal();
             DetermineLeader(table);
+            _service.Save(table);
             return View("Current", table);
         } 
 

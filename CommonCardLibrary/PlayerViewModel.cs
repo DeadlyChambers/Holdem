@@ -17,9 +17,10 @@ namespace CommonCardLibrary
         public Hand Hand { get; set; }
         public int HandStrength { get; set; }
         public bool WinningHand { get; set; }
-        public PlayerViewModel(string name) : base()
+        public PlayerViewModel(string name, int position) : base()
         {
             Name = name;
+            Position = position;
             InitializePlayer();
         }
 

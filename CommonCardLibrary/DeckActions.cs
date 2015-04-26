@@ -21,13 +21,11 @@ namespace CommonCardLibrary
 
         public static void Shuffle(this List<Card> Cards)
         {
-            Card tempCard;
             Random r = new Random(DateTime.Now.Millisecond);
-            int randomNumber;
             for(int index = 51; index>0; index--)
             {
-                randomNumber = r.Next(0, index + 1);
-                tempCard = Cards[index];
+                 var randomNumber = r.Next(0, index + 1);
+                var tempCard = Cards[index];
                 Cards[index] = Cards[randomNumber];
                 Cards[randomNumber] = tempCard;
             }
@@ -35,8 +33,7 @@ namespace CommonCardLibrary
 
         public static List<Card> ToCards(this string cards)
         {
-            var json = JArray.Parse(cards);
-            return json.Select(p => new Card
+            return JArray.Parse(cards).Select(p => new Card
             {
                 Value = EnumParse.ValueDictionary[p["Value"].ToString()],
                 Suit = EnumParse.SuitDictionary[p["Suit"].ToString()],
@@ -58,29 +55,20 @@ namespace CommonCardLibrary
                 })
                 ).ToString();
         }
-
-        //public string ToJson()
-        //{
-        //    return new JObject
-        //    {
-        //        {"Cards", Cards.ToJson()}
-        //    }.ToString();
-        //}
-
+       
         public static string ToString(this List<Card> Cards)
         {
-            var str = "";
+            var str = new StringBuilder();
             foreach (Card card in Cards)
                 if (card.Suit == Suit.Club)
-                    str += card.Value.ToString() + " Club /n ";
+                    str.AppendLine(card.Value + " Club ");
                 else if (card.Suit == Suit.Heart)
-                    str += card.Value.ToString() + " Heart /n ";
+                    str.AppendLine(card.Value + " Heart ");
                 else if (card.Suit == Suit.Diamond)
-                    str += card.Value.ToString() + " Diamond /n ";
+                    str.AppendLine(card.Value+ " Diamond ");
                 else
-                    str += card.Value.ToString() + " Spade /n ";
-
-            return str;
+                    str.AppendLine(card.Value + " Spade ");
+            return str.ToString();
         }
     }    
 }

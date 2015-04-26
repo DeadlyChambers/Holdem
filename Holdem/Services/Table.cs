@@ -14,5 +14,7 @@ namespace Holdem.Services
         public int Pot { get; set; }
         public string CardsJson { get; set; }
         public bool DealOver { get; set; }
+        //public virtual Game Game { get; set; }
+        //public virtual Guid GameId { get; set; }
     }
 }

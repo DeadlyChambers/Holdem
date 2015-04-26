@@ -13,13 +13,35 @@ namespace Holdem.Services
         {
             var table = ToTable(tableViewModel);
             var players = table.Players;
+            //table.GameId = GameStuff.GameId;
             db.Tables.AddOrUpdate(table);
+            foreach (var player in players)
+            {
+                var tPlayer = player;
+                  //  tPlayer.GameId = GameStuff.GameId;
+                db.Players.AddOrUpdate(tPlayer);
+                
+            }
+            var game = new Game()
+            {
+                Id = GameStuff.GameId,
+                Players = players,
+                Tables = new List<Table>() { table}
+            };
+            //db.Games.AddOrUpdate(game);
             db.SaveChanges();
         }
 
         public TableViewModel Get(Guid? id, int? players)
         {
-            return ToTableViewModel(id.HasValue ? db.Tables.Find(id) : db.Tables.FirstOrDefault());
+            var table = db.Tables.Find(id);
+            if (table == null)
+            {
+               var tm = GameContextInitializer.GetTableViewModel(players.Value);
+                Save(tm);
+                return tm;
+            }
+            return ToTableViewModel(table);
         }
 
         private List<PlayerViewModel> ToPlayerViewModel(List<Player> players)
@@ -35,7 +57,7 @@ namespace Holdem.Services
                 Hand = EnumParse.HandDictionary[x.HandEnum.ToString()],
                 HandStrength = x.HandStrength,
                 WinningHand = x.WinningHand
-            }).ToList();
+            }).OrderBy(y => y.Position).ToList();
         } 
 
         private List<Player> ToPlayers(List<PlayerViewModel> playersVm)
