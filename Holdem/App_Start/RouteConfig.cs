@@ -9,6 +9,7 @@ namespace Holdem
         {
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
+
             routes.MapRoute(
                name: "Table",
                url: "Table/{action}/{playerCount}",

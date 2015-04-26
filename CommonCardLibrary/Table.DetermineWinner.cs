@@ -8,7 +8,7 @@ namespace CommonCardLibrary
 {
     public partial class TableViewModel
     {
-        public List<Player> DetermineWinner()
+        public List<PlayerViewModel> DetermineWinner()
         {
             foreach (var player in Players)
             {
@@ -17,7 +17,13 @@ namespace CommonCardLibrary
             var bestHand = Players.GroupBy(x => (int)x.Hand).OrderByDescending(g => g.Key).First();
             var bestStrength =
                 Players.Where(x => x.Hand == (Hand)bestHand.Key).GroupBy(x => x.HandStrength).OrderByDescending(g => g.Key).First();
-            return Players.Where(x => x.Hand == (Hand)bestHand.Key && x.HandStrength == bestStrength.Key).ToList();
+            var leaders =
+                Players.Where(x => x.Hand == (Hand) bestHand.Key && x.HandStrength == bestStrength.Key).ToList();
+            foreach (var player in Players)
+            {
+                player.WinningHand = leaders.Count(x => x.Id == player.Id) == 1;
+            }
+            return leaders;
 
         }
     }

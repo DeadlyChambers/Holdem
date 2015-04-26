@@ -20,37 +20,31 @@ namespace Holdem.Controllers
         // GET: Table
         public ActionResult Current(int? playerCount)
         {
-            var deck = new Deck();
-            var players = new List<Player>();
-            playerCount = playerCount ?? 1;
-            for (var x = 0; x < playerCount; x++)
-                players.Add(new Player());
-            var table = new TableViewModel(deck, players);
+            var table = _service.Get(null, playerCount);
             table.Deal();
-            _service.Save(table);
+            DetermineLeader(table);
             return View("Current", table);
         } 
 
         [HttpPost]
-        public ActionResult Current(string Command, Guid? tableId)
+        public ActionResult Current(string Command, Guid? id)
         {
-            var currentTable = _service.Get(tableId);
+            var currentTable = _service.Get(id, null);
             if (!currentTable.DealOver && (Command == "Bet" || Command == "Check"))
             {
                 currentTable.BurnAndTurn();
-                var leader =currentTable.DetermineWinner();
-                
-                foreach (var player in currentTable.Players)
-                {
-                    player.WinningHand = leader.Count(x => x.Id == player.Id) == 1;
-                }
-                
-                _service.Save(currentTable);
+                DetermineLeader(currentTable);
             }
             else
                 return RedirectToAction("Current",new {playerCount = currentTable.Players.Count(x => x.Playing)}
         );
             return View("Current", currentTable);
+        }
+
+        private void DetermineLeader(TableViewModel currentTable)
+        {
+            currentTable.DetermineWinner();
+            _service.Save(currentTable);
         }
     }
 

@@ -9,21 +9,27 @@ namespace CommonCardLibrary
     public partial class TableViewModel
     {
         public Guid Id { get; set; }
-        public List<Player> Players{get;set;}
-        public Deck Deck { get; set; }
+        public List<PlayerViewModel> Players{get;set;}
+        public List<Card> Deck { get; set; }
         public int Pot { get; set; }
         public List<Card> Cards { get; set; }
         public bool DealOver { get; set; }
-        
-        public TableViewModel(Deck deck, List<Player> players) 
+
+        public TableViewModel()
+        {
+            Id = Guid.NewGuid();
+        }
+
+        public TableViewModel(List<Card> deck, List<PlayerViewModel> players) 
         {
             Id = Guid.NewGuid();
             Deck = deck;
             Players = players;
             Cards = new List<Card>();
+           
         }
 
-        public TableViewModel(Deck deck, List<Player> players, List<Card> cards)
+        public TableViewModel(List<Card> deck, List<PlayerViewModel> players, List<Card> cards)
         {
             Id = Guid.NewGuid();
             Deck = deck;
@@ -34,11 +40,20 @@ namespace CommonCardLibrary
         public void Deal()
         {
             var index = -1;
-            foreach (Player player in Players.Where(x => x.Playing))
-                player.Cards.Add(Deck.Cards[++index]);
-            foreach (Player player in Players.Where(x => x.Playing))
-                player.Cards.Add(Deck.Cards[++index]);
+            foreach (PlayerViewModel player in Players.Where(x => x.Playing))
+                player.Cards.Add(Deck[++index]);
+            foreach (PlayerViewModel player in Players.Where(x => x.Playing))
+                player.Cards.Add(Deck[++index]);
 
+        }
+
+        //Only to be used for test purposes
+        public void TurnCardSpecific(params Card[] cards)
+        {
+            foreach (var card in cards)
+            {
+                Cards.Add(card);
+            }
         }
 
         public void BurnAndTurn()
@@ -46,13 +61,13 @@ namespace CommonCardLibrary
             var count = (Players.Count(x => x.Playing) * 2);
             if(Cards.Count == 0)
             {
-                Cards.Add(Deck.Cards[count]);
-                Cards.Add(Deck.Cards[count + 1]);
-                Cards.Add(Deck.Cards[count + 2]);                
+                Cards.Add(Deck[count]);
+                Cards.Add(Deck[count + 1]);
+                Cards.Add(Deck[count + 2]);                
             }
             else if(Cards.Count == 3 || Cards.Count == 4)
             {
-                Cards.Add(Deck.Cards[count + Cards.Count+ 1]);
+                Cards.Add(Deck[count + Cards.Count+ 1]);
             }
             if(Cards.Count == 5)
                 DealOver = true;

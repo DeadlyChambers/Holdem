@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Web;
 
 namespace Holdem.Services
 {
-    public class GameContext : DbContext
+    public class Deck
     {
-        public DbSet<Table> Tables { get; set; } 
+        public Guid Id { get; set; }
+        public string CardsJson { get; set; }
     }
 }

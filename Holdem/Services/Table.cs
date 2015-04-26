@@ -10,9 +10,9 @@ namespace Holdem.Services
     {
         public Guid Id { get; set; }
         public virtual List<Player> Players { get; set; }
-        public virtual Deck Deck { get; set; }
+        public string DeckJson { get; set; }
         public int Pot { get; set; }
-        public virtual List<Card> Cards { get; set; }
+        public string CardsJson { get; set; }
         public bool DealOver { get; set; }
     }
 }

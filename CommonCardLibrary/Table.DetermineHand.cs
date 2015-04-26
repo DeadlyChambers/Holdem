@@ -10,14 +10,16 @@ namespace CommonCardLibrary
     public partial class TableViewModel
     {
         private int currentCardCount;
-        private int tempHandStrength;
+       
         private List<Card> cards;
-        private Player _player;
-        public void DetermineHand(Player player)
+        private PlayerViewModel _playerViewModel;
+        public void DetermineHand(PlayerViewModel playerViewModel)
         {
-            _player = player;
-            cards = new List<Card>(_player.Cards);
-            _player.HandStrength = 0;
+            _playerViewModel = playerViewModel;
+            cards = new List<Card>(_playerViewModel.Cards);
+            _playerViewModel.HandStrength = 0;
+            _playerViewModel.Hand = Hand.HighCard;
+            
             currentCardCount = 5;
             cards.AddRange(Cards);
             if (StraightFlush())
@@ -26,13 +28,15 @@ namespace CommonCardLibrary
                 return;
             if (FullHouse())
                 return;
-            if (_player.Hand == Hand.Flush || Flush())
+            if (_playerViewModel.Hand == Hand.Flush || Flush())
                 return;
-            if (_player.Hand == Hand.Straight || Straight())
+            if (_playerViewModel.Hand == Hand.Straight || Straight())
                 return;
-            if (_player.Hand == Hand.ThreeOfAKind || ThreeOfAKind())
+            if (_playerViewModel.Hand == Hand.ThreeOfAKind || ThreeOfAKind())
                 return;
-            if (_player.Hand == Hand.Pair || _player.Hand == Hand.TwoPair || CheckPairs())
+            if(_playerViewModel.Hand == Hand.TwoPair || CheckPairs())
+                return;
+            if (_playerViewModel.Hand == Hand.Pair || CheckPairs())
                 return;
             HighCard();
         }
@@ -41,7 +45,7 @@ namespace CommonCardLibrary
         {
             if (Flush() && Straight())
             {
-                _player.Hand = Hand.StraightFlush;
+                _playerViewModel.Hand = Hand.StraightFlush;
                 return true;
             }
             return false;
@@ -52,7 +56,7 @@ namespace CommonCardLibrary
             var multiples = cards.GroupBy(x => (int)x.Value).OrderByDescending(y => y.Key).FirstOrDefault(g => g.Count() == 4);
             if (multiples == null)
                 return false;
-            _player.Hand  = Hand.FourOfAKind;
+            _playerViewModel.Hand  = Hand.FourOfAKind;
             RemoveCardsOfValue(multiples.Key,4);
             return true;
         }
@@ -61,7 +65,7 @@ namespace CommonCardLibrary
         {
             if (ThreeOfAKind() && CheckPairs())
             {
-                _player.Hand = Hand.FullHouse;
+                _playerViewModel.Hand = Hand.FullHouse;
                 return true;
             }
             return false;
@@ -79,7 +83,7 @@ namespace CommonCardLibrary
             }
             if (flushCards.Count() < 5)
                 return false;
-            _player.Hand = Hand.Flush;
+            _playerViewModel.Hand = Hand.Flush;
             cards = flushCards;
             GetValue(5);
             return true;
@@ -87,43 +91,32 @@ namespace CommonCardLibrary
 
         public bool Straight( )
         {
-            var straight = cards.GroupBy(x => (int) x.Value).OrderByDescending(y => y.Key).ToList();
             var containsAce = cards.Count(x => x.Value == Value.Ace) > 0;
+            var straight = cards.GroupBy(x => (int) x.Value).OrderByDescending(y => y.Key).ToList();
+            var straightValues = straight.Select((v, c) => v.Key).ToList();
+            if (containsAce)
+                straightValues.Add(1);
             var countForStraight = 0;
-            var lastValue = straight[0].Key;
-            foreach (var value in straight)
+            var startvalue = straight[0].Key;
+            var tempHandStrength = 0;
+            foreach (var val in straightValues)
             {
-                if (value.Key == lastValue)
+                if (val == startvalue - countForStraight)
                 {
                     countForStraight++;
-                    tempHandStrength += value.Key*13;
+                    tempHandStrength += val*13;
                 }
                 else
                 {
-                    if ((value.Key + 1) == lastValue)
-                    {
-                        countForStraight++;
-                        tempHandStrength += value.Key*13;
-                        
-                        if (value.Key == 2 && containsAce && countForStraight!=5)
-                        {
-                            countForStraight++;
-                            tempHandStrength += 13;
-                        }
-                    }
-                    else
-                    {
-                        countForStraight = 1;
-                        tempHandStrength = 0;
-                    }
-                    if (countForStraight == 5)
-                    {
-                        _player.Hand = Hand.Straight;
-                        _player.HandStrength = tempHandStrength;
-                        return true;
-                    }
-                    lastValue = value.Key;
-
+                    startvalue = val;
+                    countForStraight = 1;
+                    tempHandStrength = val * 13;
+                }
+                if (countForStraight == 5)
+                {
+                    _playerViewModel.Hand = Hand.Straight;
+                    _playerViewModel.HandStrength = tempHandStrength;
+                    return true;
                 }
             }
             return false;
@@ -134,7 +127,7 @@ namespace CommonCardLibrary
             var trip = cards.GroupBy(x => (int)x.Value).OrderByDescending(y => y.Key).FirstOrDefault(g => g.Count() == 3);
             if (trip == null)
                 return false;
-            _player.Hand = Hand.ThreeOfAKind;
+            _playerViewModel.Hand = Hand.ThreeOfAKind;
             RemoveCardsOfValue(trip.Key, 3);
             GetValue(currentCardCount);
             return true;
@@ -143,7 +136,7 @@ namespace CommonCardLibrary
         public bool HighCard()
         {
             GetValue(5);
-            _player.Hand = Hand.HighCard;
+            _playerViewModel.Hand = Hand.HighCard;
             return true;
         }
 
@@ -156,10 +149,10 @@ namespace CommonCardLibrary
                 case 0:
                     return false;
                 case 1:
-                    _player.Hand = Hand.Pair;
+                    _playerViewModel.Hand = Hand.Pair;
                     break;
                 default:
-                    _player.Hand = Hand.TwoPair;
+                    _playerViewModel.Hand = Hand.TwoPair;
                     break;
             }
 
@@ -179,15 +172,16 @@ namespace CommonCardLibrary
             for (var x = cards.Count - 1; x > 0; x--)
                 if (cards[x].Value == (Value) pair)
                     cards.RemoveAt(x);
-            _player.HandStrength += pair*13*currentCardCount;
+            _playerViewModel.HandStrength += pair*(int)Math.Pow(13,currentCardCount);
             currentCardCount -= decrementBy;
         }
 
         private void GetValue(int curCard)
         {
-            foreach (var card in cards.OrderByDescending(x => (int)x.Value))
+            var newOrder = cards.OrderByDescending(x => (int) x.Value);
+            foreach (var card in newOrder)
             {
-                _player.HandStrength += (int) card.Value*13*curCard;
+                _playerViewModel.HandStrength += (int) card.Value*(int)Math.Pow(13,curCard);
                 curCard--;
                 if (curCard == 0)
                     break;
