@@ -40,7 +40,7 @@
                     <div class="current-hand">
                         <h1>@Model.Players[x].Hand</h1>
 
-                        @if (Model.Players[x].WinningHand)
+                        @if (Model.Players[x].Won)
                         {
                             <span class="glyphicon glyphicon-check winning-check" ></span>
                         }
@@ -80,7 +80,7 @@
                     <div class="current-hand">
                         <h1>@Model.Players[x].Hand</h1>
 
-                        @if (Model.Players[x].WinningHand)
+                        @if (Model.Players[x].Won)
                         {
                             <span class="glyphicon glyphicon-check winning-check" ></span>
                         }

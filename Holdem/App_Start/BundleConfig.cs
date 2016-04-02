@@ -24,7 +24,7 @@ namespace Holdem
 
 
 
-            BundleTable.EnableOptimizations = true;
+            BundleTable.EnableOptimizations = false;
         }
     }
 }

@@ -1,0 +1,62 @@
+﻿@using Holdem.Utilities
+@model Holdem.Models.TableRoundViewModel
+
+<h2>Current Players</h2>
+<hr />
+<table>
+    <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th>
+                Cash Left
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var player in Model.Players)
+        {
+            <tr>
+                <td>@player.Name</td>
+                <td>@player.Cash</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<br />
+<h2>Possible Players</h2>
+<hr />
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Current Cash</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var player in Model.AvailablePlayers)
+        {
+            <tr>
+                <td>@player.Name</td>
+                <td>@player.Cash</td>
+                <td>
+                    @if (Model.Players.Count < Constants.MAX_PLAYERS)
+                {
+                        <button class="btn btn-primary" onclick="AddPlayerToTable('@Model.Table.Id', '@Model.Round.Id', '@player.Id')">Add Player</button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>
+    @if (Model.Players.Count > 2)
+    {
+        @Html.ActionLink("View Game", "Current", new {tableId = @Model.Table.Id, roundId = @Model.Round.Id}) 
+    } |
+    @Html.ActionLink("Edit", "Edit", new {id = @Model.Table.Id}) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

@@ -1,0 +1,64 @@
+﻿@model CommonCardLibrary.Entities.Table
+
+@{
+    ViewBag.Title = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Table</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MinBet)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MinBet)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MaxBet)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MaxBet)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.BuyIn)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.BuyIn)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Active)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Active)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

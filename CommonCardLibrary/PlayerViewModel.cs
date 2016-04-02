@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CommonCardLibrary.Entities;
+using Newtonsoft.Json;
 
 namespace CommonCardLibrary
 {
@@ -10,14 +12,16 @@ namespace CommonCardLibrary
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public bool Playing { get; set; }
-        public int Position { get; set; }
+        public byte Position { get; set; }
         public List<Card> Cards { get; set; }
-        public int Chips { get; set; }
+        public decimal TotalCash { get; set; }
+        public decimal? CashInHand { get; set; }
         public Hand Hand { get; set; }
         public int HandStrength { get; set; }
-        public bool WinningHand { get; set; }
-        public PlayerViewModel(string name, int position) : base()
+        public bool Active { get; set; }
+        public bool Acting { get; set; }
+        public bool Won { get; set; }
+        public PlayerViewModel(string name, byte position) 
         {
             Name = name;
             Position = position;
@@ -29,10 +33,25 @@ namespace CommonCardLibrary
            InitializePlayer();
         }
 
+        public PlayerViewModel(PlayerHand player, string name)
+        {
+            Id = player.PlayerId;
+            Active = player.Active;
+            Acting = player.Acting;
+            Hand = Hand.HighCard;
+            Cards = string.IsNullOrEmpty(player.Cards)
+                ? JsonConvert.DeserializeObject<List<Card>>(player.Cards)
+                : new List<Card>();
+            TotalCash = player.TotalCash;
+            CashInHand = player.CashInHand;
+            Name = name;
+            Won = player.Won;
+        }
+
         private void InitializePlayer()
         {
             Id = Guid.NewGuid();
-            Playing = true;
+            Active = true;
             Hand = Hand.HighCard;
             Cards = new List<Card>();
         }

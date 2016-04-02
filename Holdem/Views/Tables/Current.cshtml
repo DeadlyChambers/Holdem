@@ -1,0 +1,23 @@
+﻿@model CommonCardLibrary.TableViewModel
+<h2>Current</h2>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.Partial("CurrentTable", Model);
+}
+@section scripts
+{
+    <script type="text/javascript">
+        @if (Model.Players.Count > 4)
+        {
+            @:$(".card").height(105).width(125);
+                    @:$(".current-hand").attr("style", "top:87px");
+                    @:$(".board").attr("style", "margin-top:155px; margin-bottom:20px;")
+                    @:$(".card-container:last").attr("style", "margin-bottom:140px");
+                }
+
+    </script>
+
+}

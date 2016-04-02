@@ -334,7 +334,7 @@ namespace CardTests
             var table = GetTable(new List<PlayerViewModel>() { player }, cards);
             var winners = table.DetermineWinner();
             Assert.IsTrue(winners.Count == 1);
-            Assert.IsTrue(player.WinningHand);
+            Assert.IsTrue(player.Won);
             Assert.IsTrue(player.Hand == Hand.Straight);
         }
 
@@ -988,22 +988,22 @@ namespace CardTests
             Assert.IsTrue(winners.Count == 1);
             Assert.IsTrue(winners[0].Id == player.Id);
             Assert.IsTrue(winners[0].Hand == Hand.Pair);
-            Assert.IsTrue(player.WinningHand);
+            Assert.IsTrue(player.Won);
 
             table.TurnCardSpecific(new Card(Suit.Spade, Value.Ten));
             winners = table.DetermineWinner();
             Assert.IsTrue(winners.Count == 1);
             Assert.IsTrue(winners[0].Id == player.Id);
             Assert.IsTrue(winners[0].Hand == Hand.Pair);
-            Assert.IsTrue(player.WinningHand);
+            Assert.IsTrue(player.Won);
 
             table.TurnCardSpecific(new Card(Suit.Heart, Value.Ace));
             winners = table.DetermineWinner();
             Assert.IsTrue(winners.Count == 1);
             Assert.IsTrue(winners[0].Id == player2.Id);
             Assert.IsTrue(player2.Hand == Hand.Pair);
-            Assert.IsTrue(player2.WinningHand);
-            Assert.IsFalse(player.WinningHand);
+            Assert.IsTrue(player2.Won);
+            Assert.IsFalse(player.Won);
         }
 
         [TestMethod]
@@ -1024,7 +1024,7 @@ namespace CardTests
             var winners = table.DetermineWinner();
             Assert.IsTrue(winners.Count == 1);
             Assert.IsTrue(player.Hand == Hand.Pair);
-            Assert.IsTrue(player.WinningHand);
+            Assert.IsTrue(player.Won);
 
             table.TurnCardSpecific(new Card(Suit.Spade, Value.Six),
                 new Card(Suit.Heart, Value.Nine),
@@ -1032,22 +1032,22 @@ namespace CardTests
             winners = table.DetermineWinner();
             Assert.IsTrue(winners.Count == 1);
             Assert.IsTrue(player4.Hand == Hand.Pair);
-            Assert.IsFalse(player.WinningHand);
-            Assert.IsTrue(player4.WinningHand);
+            Assert.IsFalse(player.Won);
+            Assert.IsTrue(player4.Won);
 
             table.TurnCardSpecific(new Card(Suit.Diamond, Value.Four));
             winners = table.DetermineWinner();
             Assert.IsTrue(winners.Count == 1);
             Assert.IsTrue(player.Hand == Hand.Pair);
-            Assert.IsTrue(player4.WinningHand);
+            Assert.IsTrue(player4.Won);
 
             table.TurnCardSpecific(new Card(Suit.Heart, Value.Ace));
             winners = table.DetermineWinner();
             Assert.IsTrue(winners.Count == 1);
             Assert.IsTrue(player3.Hand == Hand.Pair);
-            Assert.IsTrue(player3.WinningHand);
-            Assert.IsFalse(player.WinningHand);
-            Assert.IsFalse(player4.WinningHand);
+            Assert.IsTrue(player3.Won);
+            Assert.IsFalse(player.Won);
+            Assert.IsFalse(player4.Won);
 
         }
 
@@ -1071,10 +1071,10 @@ namespace CardTests
             Assert.IsTrue(winners.Count == 2);
             Assert.IsTrue(player.Hand == Hand.Straight);
             Assert.IsTrue(player2.Hand == Hand.Straight);
-            Assert.IsTrue(player.WinningHand);
-            Assert.IsTrue(player2.WinningHand);
-            Assert.IsFalse(player3.WinningHand);
-            Assert.IsFalse(player4.WinningHand);
+            Assert.IsTrue(player.Won);
+            Assert.IsTrue(player2.Won);
+            Assert.IsFalse(player3.Won);
+            Assert.IsFalse(player4.Won);
         }
 
         [TestMethod]
@@ -1096,18 +1096,18 @@ namespace CardTests
             Assert.IsTrue(player2.Hand == Hand.Pair);
             Assert.IsTrue(player3.Hand == Hand.Pair);
             Assert.IsTrue(player4.Hand == Hand.Pair);
-            Assert.IsTrue(player3.WinningHand);
+            Assert.IsTrue(player3.Won);
 
             table.TurnCardSpecific(new Card(Suit.Club, Value.Jack));
             table.DetermineWinner();
             Assert.IsTrue(player2.Hand == Hand.Pair);
             Assert.IsTrue(player3.Hand == Hand.TwoPair);
             Assert.IsTrue(player4.Hand == Hand.Pair);
-            Assert.IsTrue(player3.WinningHand);
+            Assert.IsTrue(player3.Won);
 
             table.TurnCardSpecific(new Card(Suit.Spade, Value.Three));
             table.DetermineWinner();
-            Assert.IsTrue(player3.WinningHand);
+            Assert.IsTrue(player3.Won);
             Assert.IsTrue(player2.Hand == Hand.TwoPair);
             Assert.IsTrue(player3.Hand == Hand.TwoPair);
             Assert.IsTrue(player4.Hand == Hand.TwoPair);
@@ -1131,8 +1131,8 @@ namespace CardTests
             table.DetermineWinner();
             Assert.IsTrue(player.Hand == Hand.FullHouse);
             Assert.IsTrue(player2.Hand == Hand.FullHouse); 
-            Assert.IsTrue(player2.WinningHand);
-            Assert.IsFalse(player.WinningHand);
+            Assert.IsTrue(player2.Won);
+            Assert.IsFalse(player.Won);
         }
 
         [TestMethod]
@@ -1153,8 +1153,8 @@ namespace CardTests
             table.DetermineWinner();
             Assert.IsTrue(player.Hand == Hand.FullHouse);
             Assert.IsTrue(player2.Hand == Hand.FullHouse);
-            Assert.IsTrue(player2.WinningHand);
-            Assert.IsFalse(player.WinningHand);
+            Assert.IsTrue(player2.Won);
+            Assert.IsFalse(player.Won);
         }
       
     }

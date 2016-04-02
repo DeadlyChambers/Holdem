@@ -3,21 +3,57 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CommonCardLibrary.Entities;
+using Newtonsoft.Json;
 
 namespace CommonCardLibrary
 {
     public partial class TableViewModel
     {
         public Guid Id { get; set; }
+        public Guid RoundId { get; set; }
         public List<PlayerViewModel> Players{get;set;}
         public List<Card> Deck { get; set; }
-        public int Pot { get; set; }
+        public decimal Pot { get; set; }
+        /// <summary>
+        /// These are the community cards
+        /// </summary>
         public List<Card> Cards { get; set; }
-        public bool DealOver { get; set; }
-
+        
         public TableViewModel()
         {
             Id = Guid.NewGuid();
+        }
+
+        public TableViewModel(List<PlayerViewModel> players, Round round)
+        {
+            Players = players;
+           
+            if (!round.Started)
+            {
+                round.Started = true;
+                var count = (Players.Count(x => x.Active)*2);
+                var deckVm = new List<Card>();
+                deckVm.InitializeDeck();
+                Deck = deckVm;
+                Deal();
+                Cards.Add(Deck[count++]);
+                Cards.Add(Deck[count++]);
+                Cards.Add(Deck[count++]);
+                count++;
+                Cards.Add(Deck[count++]);
+                count++;
+                Cards.Add(Deck[count]);
+
+            }
+            else
+            {
+                RoundId = round.Id;
+                Id = round.TableId;
+                Cards = JsonConvert.DeserializeObject<List<Card>>(round.Cards);
+            }
+
+
         }
 
         public TableViewModel(List<Card> deck, List<PlayerViewModel> players) 
@@ -40,9 +76,9 @@ namespace CommonCardLibrary
         public void Deal()
         {
             var index = -1;
-            foreach (PlayerViewModel player in Players.Where(x => x.Playing))
+            foreach (PlayerViewModel player in Players.Where(x => x.Active))
                 player.Cards.Add(Deck[++index]);
-            foreach (PlayerViewModel player in Players.Where(x => x.Playing))
+            foreach (PlayerViewModel player in Players.Where(x => x.Active))
                 player.Cards.Add(Deck[++index]);
 
         }
@@ -54,24 +90,6 @@ namespace CommonCardLibrary
             {
                 Cards.Add(card);
             }
-        }
-
-        public void BurnAndTurn()
-        {
-            var count = (Players.Count(x => x.Playing) * 2);
-            if(Cards.Count == 0)
-            {
-                Cards.Add(Deck[count]);
-                Cards.Add(Deck[count + 1]);
-                Cards.Add(Deck[count + 2]);                
-            }
-            else if(Cards.Count == 3 || Cards.Count == 4)
-            {
-                Cards.Add(Deck[count + Cards.Count+ 1]);
-            }
-            if(Cards.Count == 5)
-                DealOver = true;
-            
         }
     }
 }

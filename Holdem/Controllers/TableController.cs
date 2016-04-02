@@ -12,41 +12,39 @@ namespace Holdem.Controllers
 
     public class TableController : Controller
     {
-        private readonly ITableService _service;
-        public TableController(ITableService service)
-        {
-            _service = service;
-        }
+        
+
+
         // GET: Table
-        public ActionResult Current(int? playerCount)
-        {
-            var table = _service.Get(null, playerCount);
-            table.Deal();
-            DetermineLeader(table);
-            _service.Save(table);
-            return View("Current", table);
-        } 
+        //public ActionResult Current(int? playerCount)
+        //{
+        //    var table = _service.Get(null, playerCount);
+        //    table.Deal();
+        //    DetermineLeader(table);
+        //    _service.Save(table);
+        //    return View("Current", table);
+        //} 
 
-        [HttpPost]
-        public ActionResult Current(string Command, Guid? id)
-        {
-            var currentTable = _service.Get(id, null);
-            if (!currentTable.DealOver && (Command == "Bet" || Command == "Check"))
-            {
-                currentTable.BurnAndTurn();
-                DetermineLeader(currentTable);
-            }
-            else
-                return RedirectToAction("Current",new {playerCount = currentTable.Players.Count(x => x.Playing)}
-        );
-            return View("Current", currentTable);
-        }
+        //[HttpPost]
+        //public ActionResult Current(string Command, Guid? id)
+        //{
+        //    var currentTable = _service.Get(id, null);
+        //    if (!currentTable.DealOver && (Command == "Bet" || Command == "Check"))
+        //    {
+        //        currentTable.BurnAndTurn();
+        //        DetermineLeader(currentTable);
+        //    }
+        //    else
+        //        return RedirectToAction("Current",new {playerCount = currentTable.Players.Count(x => x.Playing)}
+        //);
+        //    return View("Current", currentTable);
+        //}
 
-        private void DetermineLeader(TableViewModel currentTable)
-        {
-            currentTable.DetermineWinner();
-            _service.Save(currentTable);
-        }
+        //private void DetermineLeader(TableViewModel currentTable)
+        //{
+        //    currentTable.DetermineWinner();
+        //    _service.Save(currentTable);
+        //}
     }
 
   

@@ -1,5 +1,5 @@
 ﻿body {
-    padding-top: 50px;
+  
     padding-bottom: 20px;
 }
 
@@ -82,7 +82,7 @@ textarea {
     margin-top: 245px;
 }
 body {
-    background-color: #c3c3c3;
+    background-color: #464646;
 }
 .body-content {
     padding: 20px 40px;
@@ -98,4 +98,10 @@ body {
   z-index: 500;
   font-weight: bold;
   color: #222;
+}
+.nav li a {
+    font-size: 16px;
+}
+a {
+    color: white;
 }

@@ -21,7 +21,7 @@ namespace CommonCardLibrary
                 Players.Where(x => x.Hand == (Hand) bestHand.Key && x.HandStrength == bestStrength.Key).ToList();
             foreach (var player in Players)
             {
-                player.WinningHand = leaders.Count(x => x.Id == player.Id) == 1;
+                player.Won = leaders.Count(x => x.Id == player.Id) == 1;
             }
             return leaders;
 

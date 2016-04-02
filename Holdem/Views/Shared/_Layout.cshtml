@@ -1,24 +1,34 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>@ViewBag.Title</title>
 
     @Styles.Render("~/bundles/styles")
-</head>
-<body>    
-    <div class="container body-content">
-        @RenderBody()
-    </div>
 
-    @Scripts.Render("~/bundles/scripts")
-    @RenderSection("scripts", required: false)
-    <script type="text/javascript">
+</head>
+<body>
+    <div class="row" style="background-color: #945514; margin-bottom: 50px;">
+        <div class="col-md-8 col-md-offset-2 ">
+            <ul class="nav nav-pills pull-right" >
+                <li role="presentation">@Html.ActionLink("Home", "Index", "Home")</li>
+                <li role="presentation">@Html.ActionLink("Players", "Index", "Players")</li>
+                <li role="presentation">@Html.ActionLink("Tables", "Index", "Tables")</li>
+            </ul>
+        </div>
+    </div>
+<div class="container body-content">
+    @RenderBody()
+</div>
+
+@Scripts.Render("~/bundles/scripts")
+@RenderSection("scripts", required: false)
+<script type="text/javascript">
     $(document).ready(function() {
         $(".card-container .card:last").addClass("second-card");
     });
-    </script>
+</script>
 </body>
 </html>

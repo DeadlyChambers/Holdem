@@ -1,5 +1,5 @@
 ﻿@model CommonCardLibrary.TableViewModel
-  @using (Html.BeginForm("Current", "Table", FormMethod.Post, new { id = "subForm", tableId = Model.Id}))
+  @*@using (Html.BeginForm("Current", "Table", FormMethod.Post, new { id = "subForm", tableId = Model.Id}))
   {
       @Html.HiddenFor(x => x.Id);
       <table class="table">
@@ -13,7 +13,7 @@
               <th></th>
           </tr>
 
-          @foreach (var player in Model.Players)
+          @foreach (var player in Model.PlayerHands)
           {
               <tr>
                   @foreach (var card in player.Cards)
@@ -45,4 +45,4 @@
       <div>
           <img class="card" src="@Url.Content("~/Content/Images/back.png")" />
       </div>
-  }
+  }*@

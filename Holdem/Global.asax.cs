@@ -12,7 +12,7 @@ namespace Holdem
         
         protected void Application_Start()
         {
-            GameStuff.GameId = Guid.NewGuid();
+            
             //Database.SetInitializer(new GameContextInitializer());
             AreaRegistration.RegisterAllAreas();
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);

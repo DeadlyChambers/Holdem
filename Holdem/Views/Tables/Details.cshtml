@@ -1,0 +1,77 @@
+﻿@model Holdem.Models.TableRoundViewModel
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Table</h4>
+    <hr/>
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Table.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Table.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Table.MinBet)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Table.MinBet)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Table.MaxBet)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Table.MaxBet)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Table.BuyIn)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Table.BuyIn)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Table.Active)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Table.Active)
+        </dd>
+
+    </dl>
+</div>
+
+@if (Model.Round.Started)
+{
+    <h2>Round is already in progress</h2>
+}
+
+    <div id="CurrentGamePlayers">
+        @Html.Partial("GamePlayers", Model)
+    </div>
+
+
+
+
+
+
+@section scripts
+{
+    <script>
+        var AddPlayerToTable = function (tableId, roundId, playerId) {
+            $("#CurrentGamePlayers").load("../AddPlayerToTable", { tableId: tableId, roundId: roundId, playerId: playerId });
+        }
+    </script>
+}

@@ -1,8 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace CommonCardLibrary
 {
-   
+
+    [Flags]
+    public enum TableRound : byte
+    {
+        PreFlop = 0,
+        Flop = 1,
+        Fourth = 2,
+        River = 4,
+        End = 8
+    }
+
 
     public enum Suit
     {
