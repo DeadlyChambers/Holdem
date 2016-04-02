@@ -18,16 +18,17 @@ namespace CommonCardLibrary.Entities
         /// <summary>
         /// Total Pot for hand
         /// </summary>
-        public decimal Pot { get; set; }
+        public decimal Pot { get; set; } = (decimal)0.00;
 
         /// <summary>
         /// Keeping record of non active game means it is over
         /// </summary>
         public bool Active { get; set; }
+
         /// <summary>
         /// At beginning of the round 
         /// </summary>
-        public byte Dealer { get; set; }
+        public byte Dealer { get; set; } = 1;
 
         /// <summary>
         /// There can only be one game that hasn't started for a table
@@ -41,6 +42,13 @@ namespace CommonCardLibrary.Entities
         public List<PlayerHand> Players { get; set; } 
 
         public Table Table { get; set; }
+
+        /// <summary>
+        /// The current bet on the table. This is the HIGHEST bet on the table
+        /// It will likely happen that someone raises above what the current and
+        /// all players will have to meet it, beat it, all in, or fold
+        /// </summary>
+        public decimal CurrentBet { get; set; } = (decimal) 0.00;
 
     }
 }

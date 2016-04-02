@@ -7,6 +7,7 @@ using System.Net;
 using System.Runtime.Remoting.Messaging;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Routing;
 using CommonCardLibrary;
 using CommonCardLibrary.Entities;
 using Holdem.Models;
@@ -55,13 +56,14 @@ namespace Holdem.Controllers
 
         private TableRoundViewModel SetupTableRoundViewModel(Round round, Table table)
         {
-            var players = db.PlayerHands.Include(x => x.Player).Where(x => x.RoundId == round.Id).Select(x => x.Player);
-            var availablePlayers = db.Players.Where(x => x.Cash > table.BuyIn).Except(players).ToList().AsSafeReadOnly();
+            var players = db.PlayerHands.Include(x => x.Player).Where(x => x.RoundId == round.Id).ToList().AsSafeReadOnly();
+            var takenIds = players.Select(x => x.PlayerId);
+            var availablePlayers = db.Players.Where(x => x.Cash > table.BuyIn && !takenIds.Contains(x.Id)).ToList().AsSafeReadOnly();
             var vm = new TableRoundViewModel
             {
                 Table = table,
                 Round = round,
-                Players = players.ToList().AsSafeReadOnly(),
+                Players = players,
                 AvailablePlayers = availablePlayers
             };
             return vm;
@@ -97,35 +99,197 @@ namespace Holdem.Controllers
         [HttpGet]
         public ActionResult Current(Guid tableId, Guid roundId)
         {
-            var table = db.Tables.Find(tableId);
+
+            return Current(new SubmitCardScreenViewModel {TableId = tableId, RoundId = roundId,PlayerId = Guid.Empty, Command="Null", RaiseAmount = (decimal)0.00});
+        }
+
+        [HttpPost]
+        public ActionResult Current(SubmitCardScreenViewModel submission)
+        {
+
+            var table = db.Tables.Find(submission.TableId);
             if (table == null)
                 return HttpNotFound("No table exists for the id");
-            var round = db.Rounds.Find(roundId);
+            var round = db.Rounds.Find(submission.RoundId);
             if (round == null)
                 return HttpNotFound("The round doesn't exist");
-            var playerHands= db.PlayerHands.Include(x => x.Player).Where(x => x.RoundId == roundId).ToList().ToSafeReadOnlyCollection();
-            var playerVms = playerHands.Select(player => new PlayerViewModel(player, player.Player.Name)).ToList();
 
-            var tableVm = new TableViewModel(playerVms, round);
+
+            var playerHands =
+                db.PlayerHands.Include(x => x.Player)
+                    .Where(x => x.RoundId == submission.RoundId).ToList();
+                    
+
+            //Round
+            //CurrentBet
+            var playerVms = new List<PlayerViewModel>();
+            foreach (var player in playerHands)
+                playerVms.Add(new PlayerViewModel(player, player.Player.Name));
+           
+            var tableVm = new TableViewModel(playerVms, round) { MinBet = table.MinBet };
             if (!round.Started)
             {
+
+                tableVm.CurrentBet = table.MinBet;
+
+                byte count = 1;
+                //To determine dealer we need to increment on a new game, then
+                //ensure that a position is there for the dealer position and
+                //that will be who starts
+
+                tableVm.Dealer = round.Dealer;
+                tableVm.Dealer++;
+                foreach (var player in tableVm.Players)
+                {
+                    player.Position = count++;
+                }
+                while (tableVm.Players.All(x => x.Position != tableVm.Dealer))
+                {
+                    tableVm.Dealer++;
+                    if (tableVm.Dealer > Constants.MAX_PLAYERS)
+                        tableVm.Dealer = 1;
+                }
+                round.CurrentBet = tableVm.CurrentBet;
                 round.Active = true;
                 round.Started = true;
                 round.Cards = JsonConvert.SerializeObject(tableVm.Cards);
                 round.Place = TableRound.PreFlop;
-                foreach (var player in tableVm.Players)
+                round.Dealer = tableVm.Dealer;
+                //db.SaveChanges();
+                if (!InitializePlayers(round.Id, tableVm))
+                    return HttpNotFound("No player is initially being selected");
+
+            }
+            else if (submission.PlayerId != Guid.Empty && submission.Command != "Null")
+            {
+                if (round.Place != TableRound.End)
+                    tableVm.Place = (TableRound)Math.Pow(2, (double)round.Place);
+                round.Place = tableVm.Place;
+                if (submission.Command == "Raise")
                 {
-                    db.PlayerHands.Find(player.Id, roundId).Cards = JsonConvert.SerializeObject(player.Cards);
+                    tableVm.CurrentBet += submission.RaiseAmount;
+                    round.CurrentBet = tableVm.CurrentBet;
+                }
+                db.SaveChanges();
+                if (submission.Command == "Call" || submission.Command == "Raise")
+                {
+                    var playerEntity = db.PlayerHands.Find(submission.PlayerId, submission.RoundId);
+                    playerEntity.Acting = false;
+                    if (playerEntity.TotalCash <= tableVm.CurrentBet)
+                    {
+                        playerEntity.CurrentBet += playerEntity.TotalCash;
+                        playerEntity.CashIn += playerEntity.TotalCash;
+                        playerEntity.TotalCash = (decimal)0.00;
+                        playerEntity.AllIn = true;
+                    }
+                    else
+                    {
+                        playerEntity.CurrentBet += tableVm.CurrentBet;
+                        playerEntity.CashIn += tableVm.CurrentBet;
+                        playerEntity.TotalCash -= tableVm.CurrentBet;
+                    }
+                }
+                var nextPlayer = 0;
+                for (var x = 0; x < tableVm.Players.Count(); x++)
+                {
+                    if (tableVm.Players[x].Id == submission.PlayerId)
+                    {
+                        nextPlayer = x + 1;
+                        break;
+                    }
+                }
+                if (nextPlayer > tableVm.Players.Count)
+                    nextPlayer = 1;
+                var vm = tableVm.Players[nextPlayer - 1];
+                vm.Acting = true;
+                db.PlayerHands.Find(vm.Id, round.Id).Acting = true;
+                //db.SaveChanges();
+                tableVm.DetermineWinner();
+                if (round.Place == TableRound.End || round.Place>TableRound.End)
+                {
+                    var nextRound = Guid.NewGuid();
+                    db.Rounds.Add(new Round
+                    {
+                        TableId = table.Id,
+                        Dealer = tableVm.Dealer,
+                        Id = nextRound,
+                        Active = true
+                    });
+                    foreach (var player in tableVm.Players)
+                    {
+                        db.PlayerHands.Add(new PlayerHand
+                        {
+                            TotalCash = player.TotalCash,
+                            PlayerId = player.Id,
+                            RoundId = nextRound
+                        });
+                    }
+                    db.SaveChanges();
+                    return Current(new SubmitCardScreenViewModel(){TableId= submission.TableId,RoundId= nextRound, PlayerId = Guid.Empty, Command = "Null", RaiseAmount = (decimal)0.00});
+                }
+                
+                db.SaveChanges();
+            }
+            
+           
+            return View(tableVm);
+        }
+
+        private bool InitializePlayers(Guid roundId, TableViewModel tableVm)
+        {
+
+            var blindCount = -1;
+            foreach (var player in tableVm.Players)
+            {
+                var playerEntity = db.PlayerHands.Find(player.Id, roundId);
+                blindCount= BetBlinds(blindCount, tableVm, ref playerEntity, player);
+                playerEntity.Cards = JsonConvert.SerializeObject(player.Cards);
+                playerEntity.Position = player.Position;
+               // db.SaveChanges();
+
+            }
+            if (blindCount == -1)
+                blindCount = 0;
+            while (blindCount < 3)
+            {
+                var player = tableVm.Players[blindCount - 1];
+                var playerEntity = db.PlayerHands.Find(player.Id, roundId);
+                blindCount =BetBlinds(blindCount, tableVm, ref playerEntity, player);
+               // db.SaveChanges();
+            }
+            return tableVm.Players.Any(x => x.Acting);
+        }
+
+        private int BetBlinds(int blindCount, TableViewModel tableVm, ref PlayerHand playerEntity, PlayerViewModel player)
+        {
+            if (blindCount == 1 || blindCount == 0) //Big Blind
+            {
+                blindCount++;
+                var totalCash = playerEntity.TotalCash;
+                var currentBet = blindCount == 0 ? tableVm.CurrentBet / 2 : tableVm.CurrentBet;
+                if (totalCash <= currentBet)
+                {
+                    playerEntity.CurrentBet += totalCash;
+                    playerEntity.CashIn += totalCash;
+                    playerEntity.TotalCash = (decimal)0.00;
+                    playerEntity.AllIn = true;
+                }
+                else
+                {
+                    playerEntity.CurrentBet += currentBet;
+                    playerEntity.CashIn += currentBet;
+                    playerEntity.TotalCash -= currentBet;
                 }
 
             }
-            else
+            if (blindCount == 2)
             {
-                if (round.Place != TableRound.End)
-                    round.Place = (TableRound)Math.Pow(2, (double)round.Place);
+                playerEntity.Acting = true;
+                player.Acting = true;
             }
-
-            return View(tableVm);
+            if (player.Position == tableVm.Dealer)
+                blindCount++;
+            return blindCount;
         }
 
         // GET: Tables/Create

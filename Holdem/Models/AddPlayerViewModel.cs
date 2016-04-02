@@ -11,4 +11,10 @@ namespace Holdem.Models
         public Guid RoundId { get; set; }
         public Guid PlayerId { get; set; }
     }
+
+    public class SubmitCardScreenViewModel : AddPlayerViewModel
+    {
+        public string Command { get; set; }
+        public decimal RaiseAmount { get; set; } = (decimal) 0.00;
+    }
 }

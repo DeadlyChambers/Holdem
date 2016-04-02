@@ -291,6 +291,7 @@
     <Content Include="Views\Tables\GamePlayers.cshtml" />
     <Content Include="Views\Tables\CurrentTable.cshtml" />
     <Content Include="Views\Tables\Current.cshtml" />
+    <Content Include="Views\Shared\CardGroup.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

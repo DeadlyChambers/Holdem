@@ -1,85 +1,46 @@
-﻿@model CommonCardLibrary.TableViewModel
+﻿@using CommonCardLibrary
+@model CommonCardLibrary.TableViewModel
 
-
+<h2>Current Bet : @Model.Pot</h2>
 <div class="form-horizontal" style="position:relative">
     <h4>Table</h4>
     <hr />
-    <div class="btn-group btn-group-lg col-md-4 col-md-offset-4" style="position: absolute; top:-50px" role="group">
-        <button type="submit" class="btn btn-default" name="Command" value="Check">Check</button>
-        <button type="submit" class="btn btn-default" name="Command" value="Bet">Bet</button>
-        <button type="submit" class="btn btn-default" name="Command" value="Fold">Fold</button>
-    </div>
-    @ })
-    @Html.HiddenFor(x => x.Id)
-    <div class="row">
-        @for (var x = 0; x < Model.Players.Count && x < 4; x++)
+    <div class="btn-group btn-group-lg col-md-4 col-md-offset-4" style="position: absolute; top: -50px" role="group">
+        <input type="hidden" name="raiseAmount" value="@Model.MinBet"/>
+        <input type="hidden" name="tableId" value="@Model.Id"/>
+        <input type="hidden" name="roundId" value="@Model.RoundId"/>
+        @*<input type="hidden" name="playerId" value="@Model.PlayerId"/>*@
+        <button type="submit" class="btn btn-default" name="Command" value="Raise">Raise</button>
+        @if (Model.CurrentBet > (decimal) 0.00)
         {
-            <div class="col-xs-3 card-container">
-                <span class="name">@Model.Players[x].Name</span>
-                @{
-                    int count = 0;
-
-                }
-                @foreach (var card in Model.Players[x].Cards)
-                {
-                    count++;
-                    @Html.Partial("Card", card, new ViewDataDictionary { { "playerCard", count % 2 == 0 }, { "playingCard", true } })
-                }
-
-                <div class="current-hand">
-                    <h1>@Model.Players[x].Hand</h1>
-
-                    @if (Model.Players[x].Won)
-                    {
-                        <span class="glyphicon glyphicon-check winning-check"></span>
-                    }
-                </div>
-            </div>
-                    }
+            <button type="submit" class="btn btn-default" name="Command" value="Call">Call</button>
+            <button type="submit" class="btn btn-default" name="Command" value="Fold">Fold</button>
+        }
+        else
+        {
+            <button type="submit" class="btn btn-default" name="Command" value="Check">Check</button>
+        }
     </div>
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.Id)
+
+    @Html.Partial("CardGroup", Model, new ViewDataDictionary { { "startingValue", 0 }, { "endingValue", 4 } })
     <div class="row board">
         <div class="col-xs-2">
-            <img class="card" src="@Html.AntiForgeryToken()" />
+            <img class="card" src="@Url.Content("~/Content/Images/back.png")" />
         </div>
-        @                    {
-            <div class="col-xs-2">
-                @Html.Partial("Card", card)
-            </div>
+        @if (Model.Place != TableRound.PreFlop)
+        {
+            foreach (var card in Model.Cards)
+            {
+                <div class="col-xs-2">
+                    @Html.Partial("Card", card)
+                </div>
+            }
         }
-
     </div>
-
     @if (Model.Players.Count > 4)
     {
-
-        for (var x = 4; x < Model.Players.Count; x++)
-        {
-          <div class="col-xs-3 card-container">
-                <span class="name">@Model.Players[x].Name</span>
-                @{
-                    var count = 0;
-                }
-                @foreach (var card in Model.Players[x].Cards)
-                {
-                    count++;
-                    @Html.Partial("Card", card, new ViewDataDictionary {{"playerCard", count%2 == 0}, {"playingCard", true}})
-                }
-
-                <div class="current-hand">
-                    <h1>@Model.Players[x].Hand</h1>
-
-                    @if (Model.Players[x].Won)
-                    {
-
-
-#line default
-#line hidden
-
-#line 28 "C:\inetpub\wwwroot\Holdem\Holdem\Views\Tables\Current.cshtml"
-                    <span class="glyphicon glyphicon-check winning-check"></span>
-                    }
-                </div>
-            </div>
-                        }
-                    }
+        @Html.Partial("CardGroup", Model, new ViewDataDictionary { { "startingValue", 4 }, { "endingValue", Model.Players.Count } })
+    }
 </div>

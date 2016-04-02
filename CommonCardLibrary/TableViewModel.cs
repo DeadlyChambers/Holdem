@@ -15,6 +15,12 @@ namespace CommonCardLibrary
         public List<PlayerViewModel> Players{get;set;}
         public List<Card> Deck { get; set; }
         public decimal Pot { get; set; }
+        public byte Dealer { get; set; }
+        public decimal CurrentBet { get; set; }
+        public decimal MinBet { get; set; } 
+        public TableRound Place { get; set; }
+
+        public Guid PlayerId { get; set; }
         /// <summary>
         /// These are the community cards
         /// </summary>
@@ -31,29 +37,21 @@ namespace CommonCardLibrary
            
             if (!round.Started)
             {
-                round.Started = true;
                 var count = (Players.Count(x => x.Active)*2);
                 var deckVm = new List<Card>();
                 deckVm.InitializeDeck();
                 Deck = deckVm;
                 Deal();
-                Cards.Add(Deck[count++]);
-                Cards.Add(Deck[count++]);
-                Cards.Add(Deck[count++]);
-                count++;
-                Cards.Add(Deck[count++]);
-                count++;
-                Cards.Add(Deck[count]);
-
+                Cards = new List<Card> {Deck[count++], Deck[count++], Deck[count++], Deck[++count], Deck[count+2] };
             }
             else
             {
-                RoundId = round.Id;
-                Id = round.TableId;
                 Cards = JsonConvert.DeserializeObject<List<Card>>(round.Cards);
             }
 
-
+            RoundId = round.Id;
+            Id = round.TableId;
+            Place = round.Place;
         }
 
         public TableViewModel(List<Card> deck, List<PlayerViewModel> players) 

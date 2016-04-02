@@ -1,0 +1,39 @@
+﻿@using CommonCardLibrary
+@model CommonCardLibrary.TableViewModel
+
+<div class="row">
+    @for (var x = (int)ViewBag.startingValue; x < Model.Players.Count && x < (int)ViewBag.endingValue; x++)
+            {
+        <div class="col-xs-3 card-container">
+            <span class="name">@Model.Players[x].Name</span>
+            @{
+                int count = 0;
+
+            }
+            @if (@Model.Players[x].Acting)
+            {
+                <input type="hidden" name="playerId" value="@Model.Players[x].Id"/>
+                <span class="glyphicon glyphicon-eye-open"></span>
+            }
+
+            @if (Model.Place != TableRound.PreFlop)
+            {
+                foreach (var card in Model.Players[x].Cards)
+                {
+                    count++;
+                    @Html.Partial("Card", card, new ViewDataDictionary {{"playerCard", count%2 == 0}, {"playingCard", true}})
+                    ;
+                }
+            }
+            <div class="current-hand">
+                <h1>@Model.Players[x].Hand</h1>
+
+                @if (Model.Players[x].Won)
+                {
+                    <span class="glyphicon glyphicon-check winning-check"></span>
+                }
+            </div>
+        </div>
+                }
+            
+</div>

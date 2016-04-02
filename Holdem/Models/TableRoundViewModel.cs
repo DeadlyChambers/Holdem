@@ -11,7 +11,7 @@ namespace Holdem.Models
     {
         public Table Table { get; set; }
         public Round Round { get; set; }
-        public ReadOnlyCollection<Player> Players { get; set; } 
+        public ReadOnlyCollection<PlayerHand> Players { get; set; } 
         public ReadOnlyCollection<Player> AvailablePlayers { get; set; } 
     }
 }
