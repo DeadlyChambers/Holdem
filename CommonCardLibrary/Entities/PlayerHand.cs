@@ -44,6 +44,9 @@ namespace CommonCardLibrary.Entities
        
         public Round Round { get; set; }
         public Player Player { get; set; }
+
+        [NotMapped]
+        public string Name { get; set; }
         
     }
 }

@@ -44,7 +44,7 @@ namespace Holdem.Controllers
             {
                 return HttpNotFound("No table exists for the id");
             }
-            var round = db.Rounds.FirstOrDefault(x => x.TableId==table.Id&& (!x.Started || x.Active));
+            var round = db.Rounds.FirstOrDefault(x => x.TableId == table.Id && (!x.Started || x.Active));
             if (round == null)
             {
                 return HttpNotFound("No rounds exist, try deleting the table");
@@ -70,14 +70,14 @@ namespace Holdem.Controllers
         [HttpPost]
         public ActionResult AddPlayerToTable(AddPlayerViewModel addPlayer)
         {
-           var table = db.Tables.Find(addPlayer.TableId);
-            if(table == null)
+            var table = db.Tables.Find(addPlayer.TableId);
+            if (table == null)
                 return HttpNotFound("No table exists for the id");
             var round = db.Rounds.Include(x => x.Players).FirstOrDefault(x => x.Id == addPlayer.RoundId && x.Players.Count < Constants.MAX_PLAYERS);
             if (round == null || round.Id == Guid.Empty)
                 return HttpNotFound("Either the round doesn't exist, or the table is already full. Try another table.");
             var player = db.Players.Find(addPlayer.PlayerId);
-            if(player == null || db.PlayerHands.Find(addPlayer.PlayerId, addPlayer.RoundId)!=null || player.Cash< table.BuyIn)
+            if (player == null || db.PlayerHands.Find(addPlayer.PlayerId, addPlayer.RoundId) != null || player.Cash < table.BuyIn)
                 return HttpNotFound("Player does not exist, can't afford the game, or is already a part of the game");
             player.Cash -= table.BuyIn;
             db.PlayerHands.Add(new PlayerHand
@@ -87,7 +87,7 @@ namespace Holdem.Controllers
                 TotalCash = table.BuyIn,
                 Acting = false,
                 Active = true,
-                Won =  false
+                Won = false
             });
             db.SaveChanges();
             var vm = SetupTableRoundViewModel(round, table);
@@ -95,7 +95,7 @@ namespace Holdem.Controllers
         }
 
         [HttpGet]
-        public ActionResult Current(Guid tableId, Guid roundId, bool startGame)
+        public ActionResult Current(Guid tableId, Guid roundId)
         {
             var table = db.Tables.Find(tableId);
             if (table == null)
@@ -103,23 +103,26 @@ namespace Holdem.Controllers
             var round = db.Rounds.Find(roundId);
             if (round == null)
                 return HttpNotFound("The round doesn't exist");
-            var playerVms = db.PlayerHands.Include(x => x.Player).Where(x => x.RoundId==roundId).Select(x => new PlayerViewModel(x, x.Player.Name)).ToList();
+            var playerHands= db.PlayerHands.Include(x => x.Player).Where(x => x.RoundId == roundId).ToList().ToSafeReadOnlyCollection();
+            var playerVms = playerHands.Select(player => new PlayerViewModel(player, player.Player.Name)).ToList();
+
             var tableVm = new TableViewModel(playerVms, round);
-            if (startGame && !round.Started)
+            if (!round.Started)
             {
                 round.Active = true;
+                round.Started = true;
                 round.Cards = JsonConvert.SerializeObject(tableVm.Cards);
                 round.Place = TableRound.PreFlop;
                 foreach (var player in tableVm.Players)
                 {
                     db.PlayerHands.Find(player.Id, roundId).Cards = JsonConvert.SerializeObject(player.Cards);
                 }
-                
+
             }
             else
             {
-                if(round.Place != TableRound.End)
-                    round.Place = (TableRound) Math.Pow(2, (double)round.Place);
+                if (round.Place != TableRound.End)
+                    round.Place = (TableRound)Math.Pow(2, (double)round.Place);
             }
 
             return View(tableVm);
