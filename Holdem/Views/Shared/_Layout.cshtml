@@ -12,11 +12,13 @@
 <body>
     <div class="row" style="background-color: #945514; margin-bottom: 50px;">
         <div class="col-md-8 col-md-offset-2 ">
-            <ul class="nav nav-pills pull-right" >
+            @Html.Partial("_LoginPartial")
+            <ul class="nav navbar-nav navbar-right" style="margin-right: 0;">
                 <li role="presentation">@Html.ActionLink("Home", "Index", "Home")</li>
                 <li role="presentation">@Html.ActionLink("Players", "Index", "Players")</li>
                 <li role="presentation">@Html.ActionLink("Tables", "Index", "Tables")</li>
             </ul>
+
         </div>
     </div>
 <div class="container body-content">

@@ -35,7 +35,7 @@ textarea {
 .second-card {
    
      position: absolute;
-    top: 0;
+    /*top: 0;*/
     left: 100px;
 } 
 .card-container {
@@ -102,6 +102,11 @@ body {
 .nav li a {
     font-size: 16px;
 }
-a {
+a,.btn-link {
     color: white;
+}
+
+.btn-link :hover{
+        color: #2a6496;
+    text-decoration: underline;
 }

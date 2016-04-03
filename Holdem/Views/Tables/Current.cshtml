@@ -5,13 +5,20 @@
 @using (Html.BeginForm())
 {
     <div></div>
-    @Html.AntiForgeryToken();
-    @Html.Partial("CurrentTable", Model);
+    @Html.AntiForgeryToken()
+    if (!string.IsNullOrEmpty(@ViewBag.NotificationMessage))
+    {
+        <div class="alert alert-info" role="alert">@ViewBag.NotificationMessage</div>
+    }
+   
+         @Html.Partial("CurrentTable", Model)
+         
+   
 }
 @section scripts
 {
     <script type="text/javascript">
-        @if (Model.Players.Count > 4)
+        @if (Model!= null && Model.Players.Count > 4)
         {
             @:$(".card").height(105).width(125);
                     @:$(".current-hand").attr("style", "top:87px");

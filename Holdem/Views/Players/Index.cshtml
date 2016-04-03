@@ -1,26 +1,52 @@
-﻿@model IEnumerable<CommonCardLibrary.Entities.Player>
+﻿@model Holdem.Models.DisplayPlayerOnIndexViewModel
 
 @{
     ViewBag.Title = "Index";
 }
 
-<h2>Player List</h2>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
+@using (Html.BeginForm("Edit", "Players", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>@Model.Player.Name </h4><h5>Current Balance</h5>
+        <div class="row">
+            <div class="col-md-4">
+                <input class="form-control text-box single-line valid" data-val="true" data-val-number="The field Cash must be a number." data-val-required="The Cash field is required." id="Player_Cash" name="Cash" type="text" value="@Model.Player.Cash" aria-required="true" aria-invalid="false" aria-describedby="Player_Cash-error">
+              
+                @Html.ValidationMessageFor(model => model.Player.Cash, "", new {@class = "text-danger"})
+            </div>
+            <div class="col-md-4">
+                @Html.ActionLink("Details", "Details", null, new {@class = "btn btn-default"})
+                <input type="submit" value="Save" class="btn btn-default"/>
+            </div>
+
+            @Html.ValidationSummary(true, "", new {@class = "text-danger"})
+        </div>
+        <hr />
+        <input type="hidden" name="Id" value="@Model.Player.Id"/>
+        <input type="hidden" name="Name" value="@Model.Player.Name"/>
+    </div>
+}
+
+
+
+
+
+<h2>Player List</h2>
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Name)
+            @Html.DisplayNameFor(model => model.Player.Name)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Cash)
+            @Html.DisplayNameFor(model => model.Player.Cash)
         </th>
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
+@foreach (var item in Model.Players) {
     <tr>
         <td>
             @Html.DisplayFor(modelItem => item.Name)
@@ -29,11 +55,13 @@
             @Html.DisplayFor(modelItem => item.Cash)
         </td>
         <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
-            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
+          
         </td>
     </tr>
 }
 
 </table>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

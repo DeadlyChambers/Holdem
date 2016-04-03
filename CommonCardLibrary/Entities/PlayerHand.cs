@@ -62,5 +62,10 @@ namespace CommonCardLibrary.Entities
         /// If the player is all in they will have no need to make a turn
         /// </summary>
         public bool AllIn { get; set; }
+
+        /// <summary>
+        /// When you are a new entry you might show up in the middle of the round and need to wait
+        /// </summary>
+        public bool Waiting { get; set; }
     }
 }

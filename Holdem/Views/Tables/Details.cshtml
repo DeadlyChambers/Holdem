@@ -42,14 +42,6 @@
             @Html.DisplayFor(model => model.Table.BuyIn)
         </dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Table.Active)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Table.Active)
-        </dd>
-
     </dl>
 </div>
 
@@ -70,8 +62,8 @@
 @section scripts
 {
     <script>
-        var AddPlayerToTable = function (tableId, roundId, playerId) {
-            $("#CurrentGamePlayers").load("../AddPlayerToTable", { tableId: tableId, roundId: roundId, playerId: playerId });
+        var addPlayerToTable = function (submission) {
+            $.post("../Current", submission);
         }
     </script>
 }

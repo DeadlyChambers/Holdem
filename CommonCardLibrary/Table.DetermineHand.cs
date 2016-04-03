@@ -21,7 +21,7 @@ namespace CommonCardLibrary
             _playerViewModel.Hand = Hand.HighCard;
             
             currentCardCount = 5;
-            cards.AddRange(Cards);
+            cards.AddRange(DisplayCards);
             if (StraightFlush())
                 return;
             if (FourOfAKind())

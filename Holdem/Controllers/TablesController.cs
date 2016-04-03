@@ -10,6 +10,7 @@ using System.Web.Mvc;
 using System.Web.Routing;
 using CommonCardLibrary;
 using CommonCardLibrary.Entities;
+using Glimpse.Mvc.Message;
 using Holdem.Models;
 using Holdem.Services;
 using Holdem.Utilities;
@@ -18,6 +19,7 @@ using WebGrease.Css.Extensions;
 
 namespace Holdem.Controllers
 {
+    [Authorize]
     public class TablesController : Controller
     {
         private GameContext db = new GameContext();
@@ -72,15 +74,46 @@ namespace Holdem.Controllers
         [HttpPost]
         public ActionResult AddPlayerToTable(AddPlayerViewModel addPlayer)
         {
+            string httpNotFound = null;
+            var vm = AddSelfToTable(addPlayer, out httpNotFound);
+            if (vm == null && httpNotFound != null)
+                return HttpNotFound(httpNotFound);
+            return PartialView("GamePlayers", vm);
+        }
+
+        private TableRoundViewModel AddSelfToTable(AddPlayerViewModel addPlayer,
+            out string httpNotFound, bool skipExtra = false)
+        {
             var table = db.Tables.Find(addPlayer.TableId);
             if (table == null)
-                return HttpNotFound("No table exists for the id");
-            var round = db.Rounds.Include(x => x.Players).FirstOrDefault(x => x.Id == addPlayer.RoundId && x.Players.Count < Constants.MAX_PLAYERS);
+            {
+                httpNotFound = "No table exists for the id";
+                return null;
+            }
+            var round =
+                 db.Rounds.Include(x => x.Players)
+                     .FirstOrDefault(x => x.Id == addPlayer.RoundId && x.Players.Count < Constants.MAX_PLAYERS);
             if (round == null || round.Id == Guid.Empty)
-                return HttpNotFound("Either the round doesn't exist, or the table is already full. Try another table.");
+            {
+                httpNotFound = "Either the round doesn't exist, or the table is already full. Try another table.";
+                return null;
+            }
             var player = db.Players.Find(addPlayer.PlayerId);
-            if (player == null || db.PlayerHands.Find(addPlayer.PlayerId, addPlayer.RoundId) != null || player.Cash < table.BuyIn)
-                return HttpNotFound("Player does not exist, can't afford the game, or is already a part of the game");
+            if (player == null)
+            {
+                httpNotFound = "Player does not exist";
+                return null;
+            }
+            if (db.PlayerHands.Find(addPlayer.PlayerId, addPlayer.RoundId) != null)
+            {
+                httpNotFound = "Player is already a part of the game";
+                return null;
+            }
+            if (player.Cash < table.BuyIn)
+            {
+                httpNotFound = "Sorry you can't afford the game, go reup";
+                return null;
+            }
             player.Cash -= table.BuyIn;
             db.PlayerHands.Add(new PlayerHand
             {
@@ -89,23 +122,35 @@ namespace Holdem.Controllers
                 TotalCash = table.BuyIn,
                 Acting = false,
                 Active = true,
-                Won = false
+                Won = false,
+                Waiting = skipExtra
             });
             db.SaveChanges();
-            var vm = SetupTableRoundViewModel(round, table);
-            return PartialView("GamePlayers", vm);
+            httpNotFound = null;
+            return skipExtra ? null : SetupTableRoundViewModel(round, table);
         }
 
         [HttpGet]
         public ActionResult Current(Guid tableId, Guid roundId)
         {
 
-            return Current(new SubmitCardScreenViewModel {TableId = tableId, RoundId = roundId,PlayerId = Guid.Empty, Command="Null", RaiseAmount = (decimal)0.00});
+            return Current(new SubmitCardScreenViewModel { TableId = tableId, RoundId = roundId, PlayerId = Guid.Empty, Command = "Null", RaiseAmount = (decimal)0.00 });
         }
 
         [HttpPost]
         public ActionResult Current(SubmitCardScreenViewModel submission)
         {
+
+            if (submission.Command == "NewEntry") //New person coming to the table need to check in and
+                                                  //get put in the table for all of the other things
+            {
+                string httpNotFound = null;
+                var vm = AddSelfToTable(submission, out httpNotFound, true);
+                if (httpNotFound != null)
+                {
+                    ViewBag.NotificationMessage = httpNotFound;
+                }
+            }
 
             var table = db.Tables.Find(submission.TableId);
             if (table == null)
@@ -113,99 +158,49 @@ namespace Holdem.Controllers
             var round = db.Rounds.Find(submission.RoundId);
             if (round == null)
                 return HttpNotFound("The round doesn't exist");
-
-
             var playerHands =
                 db.PlayerHands.Include(x => x.Player)
                     .Where(x => x.RoundId == submission.RoundId).ToList();
-                    
 
-            //Round
-            //CurrentBet
             var playerVms = new List<PlayerViewModel>();
             foreach (var player in playerHands)
                 playerVms.Add(new PlayerViewModel(player, player.Player.Name));
-           
+
+            if (playerHands.Count < 3)
+                ViewBag.NotificationMessage = "We can't start until we have at least three people";
             var tableVm = new TableViewModel(playerVms, round) { MinBet = table.MinBet };
-            if (!round.Started)
+          
+
+            
+            if (!round.Started|| string.IsNullOrEmpty(round.Cards))
             {
-
                 tableVm.CurrentBet = table.MinBet;
-
                 byte count = 1;
-                //To determine dealer we need to increment on a new game, then
-                //ensure that a position is there for the dealer position and
-                //that will be who starts
-
-                tableVm.Dealer = round.Dealer;
-                tableVm.Dealer++;
                 foreach (var player in tableVm.Players)
-                {
                     player.Position = count++;
-                }
-                while (tableVm.Players.All(x => x.Position != tableVm.Dealer))
-                {
-                    tableVm.Dealer++;
-                    if (tableVm.Dealer > Constants.MAX_PLAYERS)
-                        tableVm.Dealer = 1;
-                }
                 round.CurrentBet = tableVm.CurrentBet;
                 round.Active = true;
                 round.Started = true;
                 round.Cards = JsonConvert.SerializeObject(tableVm.Cards);
                 round.Place = TableRound.PreFlop;
                 round.Dealer = tableVm.Dealer;
-                //db.SaveChanges();
-                if (!InitializePlayers(round.Id, tableVm))
-                    return HttpNotFound("No player is initially being selected");
-
+                InitializePlayers(round.Id, tableVm);
             }
             else if (submission.PlayerId != Guid.Empty && submission.Command != "Null")
             {
-                if (round.Place != TableRound.End)
-                    tableVm.Place = (TableRound)Math.Pow(2, (double)round.Place);
+                //premptively bringing people to the page that belong
+                if (!string.IsNullOrEmpty(ViewBag.NotificationMessage))
+                    return View("Current", tableVm);
+                var tempPlace = round.Place == TableRound.PreFlop ? (byte)round.Place + 1 : (byte)round.Place * 2;
+                tableVm.Place = (TableRound)tempPlace;
                 round.Place = tableVm.Place;
                 if (submission.Command == "Raise")
                 {
                     tableVm.CurrentBet += submission.RaiseAmount;
                     round.CurrentBet = tableVm.CurrentBet;
                 }
-                db.SaveChanges();
-                if (submission.Command == "Call" || submission.Command == "Raise")
-                {
-                    var playerEntity = db.PlayerHands.Find(submission.PlayerId, submission.RoundId);
-                    playerEntity.Acting = false;
-                    if (playerEntity.TotalCash <= tableVm.CurrentBet)
-                    {
-                        playerEntity.CurrentBet += playerEntity.TotalCash;
-                        playerEntity.CashIn += playerEntity.TotalCash;
-                        playerEntity.TotalCash = (decimal)0.00;
-                        playerEntity.AllIn = true;
-                    }
-                    else
-                    {
-                        playerEntity.CurrentBet += tableVm.CurrentBet;
-                        playerEntity.CashIn += tableVm.CurrentBet;
-                        playerEntity.TotalCash -= tableVm.CurrentBet;
-                    }
-                }
-                var nextPlayer = 0;
-                for (var x = 0; x < tableVm.Players.Count(); x++)
-                {
-                    if (tableVm.Players[x].Id == submission.PlayerId)
-                    {
-                        nextPlayer = x + 1;
-                        break;
-                    }
-                }
-                if (nextPlayer > tableVm.Players.Count)
-                    nextPlayer = 1;
-                var vm = tableVm.Players[nextPlayer - 1];
-                vm.Acting = true;
-                db.PlayerHands.Find(vm.Id, round.Id).Acting = true;
-                //db.SaveChanges();
                 tableVm.DetermineWinner();
-                if (round.Place == TableRound.End || round.Place>TableRound.End)
+                if (round.Place == TableRound.End)
                 {
                     var nextRound = Guid.NewGuid();
                     db.Rounds.Add(new Round
@@ -225,72 +220,50 @@ namespace Holdem.Controllers
                         });
                     }
                     db.SaveChanges();
-                    return Current(new SubmitCardScreenViewModel(){TableId= submission.TableId,RoundId= nextRound, PlayerId = Guid.Empty, Command = "Null", RaiseAmount = (decimal)0.00});
+                    return
+                        Current(new SubmitCardScreenViewModel()
+                        {
+                            TableId = submission.TableId,
+                            RoundId = nextRound,
+                            PlayerId = Guid.Empty,
+                            Command = "Null",
+                            RaiseAmount = (decimal)0.00
+                        });
                 }
-                
-                db.SaveChanges();
+
+              
             }
-            
-           
+            db.SaveChanges();
             return View(tableVm);
         }
 
-        private bool InitializePlayers(Guid roundId, TableViewModel tableVm)
+        private void InitializePlayers(Guid roundId, TableViewModel tableVm)
         {
-
-            var blindCount = -1;
+            //See if we have an acting player if we do, let's move to the next
+            //player. Ensuring that we don't go over the limit we have of players
+            var currentActing = tableVm.Players.Find(x => x.Acting)?.Position;
+            if (currentActing == null || currentActing >= tableVm.Players.Count)
+                currentActing = 1;
+            currentActing++;
+            tableVm.DetermineWinner();
             foreach (var player in tableVm.Players)
             {
+                player.Waiting = false;
                 var playerEntity = db.PlayerHands.Find(player.Id, roundId);
-                blindCount= BetBlinds(blindCount, tableVm, ref playerEntity, player);
                 playerEntity.Cards = JsonConvert.SerializeObject(player.Cards);
                 playerEntity.Position = player.Position;
-               // db.SaveChanges();
-
+                playerEntity.Won = player.Won;
+                playerEntity.Acting = false;
+                playerEntity.Waiting = false;
+                player.Acting = false;
+                if (player.Position == currentActing)
+                {
+                    playerEntity.Acting = true;
+                    player.Acting = true;
+                }
             }
-            if (blindCount == -1)
-                blindCount = 0;
-            while (blindCount < 3)
-            {
-                var player = tableVm.Players[blindCount - 1];
-                var playerEntity = db.PlayerHands.Find(player.Id, roundId);
-                blindCount =BetBlinds(blindCount, tableVm, ref playerEntity, player);
-               // db.SaveChanges();
-            }
-            return tableVm.Players.Any(x => x.Acting);
         }
 
-        private int BetBlinds(int blindCount, TableViewModel tableVm, ref PlayerHand playerEntity, PlayerViewModel player)
-        {
-            if (blindCount == 1 || blindCount == 0) //Big Blind
-            {
-                blindCount++;
-                var totalCash = playerEntity.TotalCash;
-                var currentBet = blindCount == 0 ? tableVm.CurrentBet / 2 : tableVm.CurrentBet;
-                if (totalCash <= currentBet)
-                {
-                    playerEntity.CurrentBet += totalCash;
-                    playerEntity.CashIn += totalCash;
-                    playerEntity.TotalCash = (decimal)0.00;
-                    playerEntity.AllIn = true;
-                }
-                else
-                {
-                    playerEntity.CurrentBet += currentBet;
-                    playerEntity.CashIn += currentBet;
-                    playerEntity.TotalCash -= currentBet;
-                }
-
-            }
-            if (blindCount == 2)
-            {
-                playerEntity.Acting = true;
-                player.Acting = true;
-            }
-            if (player.Position == tableVm.Dealer)
-                blindCount++;
-            return blindCount;
-        }
 
         // GET: Tables/Create
         public ActionResult Create()

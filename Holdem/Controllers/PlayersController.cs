@@ -7,10 +7,13 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using CommonCardLibrary.Entities;
+using Holdem.Models;
 using Holdem.Services;
+using Microsoft.AspNet.Identity;
 
 namespace Holdem.Controllers
 {
+    [Authorize]
     public class PlayersController : Controller
     {
         private GameContext db = new GameContext();
@@ -18,16 +21,21 @@ namespace Holdem.Controllers
         // GET: Players
         public ActionResult Index()
         {
-            return View(db.Players.ToList());
+            var id = Guid.Parse(User.Identity.GetUserId());
+            var player = db.Players.Find(id);
+            var vm = new DisplayPlayerOnIndexViewModel
+            {
+                Players = db.Players.ToList(),
+                Player = player
+            };
+ 
+            return View(vm);
         }
 
         // GET: Players/Details/5
-        public ActionResult Details(Guid? id)
+        public ActionResult Details()
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
+            var id = Guid.Parse(User.Identity.GetUserId());
             Player player = db.Players.Find(id);
             if (player == null)
             {
@@ -35,87 +43,26 @@ namespace Holdem.Controllers
             }
             return View(player);
         }
+       
 
-        // GET: Players/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Players/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Name,Cash")] Player player)
-        {
-            if (ModelState.IsValid)
-            {
-                player.Id = Guid.NewGuid();
-                db.Players.Add(player);
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-
-            return View(player);
-        }
-
-        // GET: Players/Edit/5
-        public ActionResult Edit(Guid? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Player player = db.Players.Find(id);
-            if (player == null)
-            {
-                return HttpNotFound();
-            }
-            return View(player);
-        }
+       
 
         // POST: Players/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Name,Cash")] Player player)
+        public ActionResult Edit( Player player)
         {
-            if (ModelState.IsValid)
+            var id = Guid.Parse(User.Identity.GetUserId());
+            if (player.Cash > 0)
             {
-                db.Entry(player).State = EntityState.Modified;
+                db.Players.Find(id).Cash = player.Cash;
                 db.SaveChanges();
-                return RedirectToAction("Index");
             }
-            return View(player);
-        }
-
-        // GET: Players/Delete/5
-        public ActionResult Delete(Guid? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Player player = db.Players.Find(id);
-            if (player == null)
-            {
-                return HttpNotFound();
-            }
-            return View(player);
-        }
-
-        // POST: Players/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(Guid id)
-        {
-            Player player = db.Players.Find(id);
-            db.Players.Remove(player);
-            db.SaveChanges();
             return RedirectToAction("Index");
         }
+      
 
         protected override void Dispose(bool disposing)
         {

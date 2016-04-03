@@ -4,6 +4,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CommonCardLibrary.Entities
 {
+    /// <summary>
+    /// Round keeps track of the dealer, the current bet, if the game has started. What
+    /// round we are currently in (preflop, flop, third etc), how much is in the pot and
+    /// the cards in the middle
+    /// </summary>
     public class Round
     {
         public Guid Id { get; set; }

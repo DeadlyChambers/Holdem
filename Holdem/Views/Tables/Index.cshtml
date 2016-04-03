@@ -23,9 +23,7 @@
         <th>
             @Html.DisplayNameFor(model => model.BuyIn)
         </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Active)
-        </th>
+      
         <th></th>
     </tr>
 
@@ -43,13 +41,11 @@
         <td>
             @Html.DisplayFor(modelItem => item.BuyIn)
         </td>
+        
         <td>
-            @Html.DisplayFor(modelItem => item.Active)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
-            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
+          
+            @Html.ActionLink("Details", "Details", new { id=item.Id }) 
+          
         </td>
     </tr>
 }

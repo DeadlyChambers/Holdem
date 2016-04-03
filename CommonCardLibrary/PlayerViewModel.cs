@@ -16,6 +16,8 @@ namespace CommonCardLibrary
         public List<Card> Cards { get; set; }
         public decimal TotalCash { get; set; }
         public decimal CashInHand { get; set; }
+        public decimal CurrentBet { get; set; }
+        public bool Waiting { get; set; }
         public Hand Hand { get; set; }
         public int HandStrength { get; set; }
         public bool Active { get; set; }
@@ -38,7 +40,8 @@ namespace CommonCardLibrary
             Id = player.PlayerId;
             Active = player.Active;
             Acting = player.Acting;
-          
+            CurrentBet = player.CurrentBet;
+            Waiting = player.Waiting;
             Hand = Hand.HighCard;
             Cards = !string.IsNullOrEmpty(player.Cards)
                 ? JsonConvert.DeserializeObject<List<Card>>(player.Cards)

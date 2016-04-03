@@ -20,12 +20,34 @@ namespace CommonCardLibrary
         public decimal MinBet { get; set; } 
         public TableRound Place { get; set; }
 
+        public string GetDealersName()
+        {
+           return Players.Find(x => x.Position == Dealer)?.Name;
+        }
         public Guid PlayerId { get; set; }
         /// <summary>
         /// These are the community cards
         /// </summary>
         public List<Card> Cards { get; set; }
-        
+
+        public List<Card> DisplayCards
+        {
+            get
+            {
+                switch (Place)
+                {
+                    case TableRound.PreFlop:
+                        return new List<Card>();
+                    case TableRound.Flop:
+                        return Cards.GetRange(0, 3);
+                    case TableRound.Fourth:
+                        return Cards.GetRange(0, 4);
+                    default:
+                        return Cards;
+                }
+            }
+        }
+
         public TableViewModel()
         {
             Id = Guid.NewGuid();
@@ -35,7 +57,7 @@ namespace CommonCardLibrary
         {
             Players = players;
            
-            if (!round.Started)
+            if (!round.Started || string.IsNullOrEmpty(round.Cards))
             {
                 var count = (Players.Count(x => x.Active)*2);
                 var deckVm = new List<Card>();
@@ -69,6 +91,8 @@ namespace CommonCardLibrary
             Deck = deck;
             Players = players;
             Cards = cards;
+            Place = TableRound.End;//This contrsutor is being used
+            //in the unit tests. This broke them all.
         }
 
         public void Deal()

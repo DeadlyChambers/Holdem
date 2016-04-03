@@ -29,15 +29,17 @@
         <div class="col-xs-2">
             <img class="card" src="@Url.Content("~/Content/Images/back.png")" />
         </div>
-        @if (Model.Place != TableRound.PreFlop)
-        {
-            foreach (var card in Model.Cards)
+      
+            @foreach (var card in Model.DisplayCards)
             {
                 <div class="col-xs-2">
                     @Html.Partial("Card", card)
                 </div>
+                
             }
-        }
+        <ul><li>Pot: @Model.Pot</li> <li>CUrrent Bet: @Model.CurrentBet</li></ul>
+        <ul><li>Dealer: @Model.GetDealersName()</li> <li>Current Turn: @Model.Place</li></ul>
+        
     </div>
     @if (Model.Players.Count > 4)
     {
